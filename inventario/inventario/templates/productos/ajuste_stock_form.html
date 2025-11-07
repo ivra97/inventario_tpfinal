@@ -1,0 +1,69 @@
+{% extends 'productos/base.html' %}
+{% load bootstrap4 %}
+{% load crispy_forms_tags %}
+
+{% block title %}Ajustar Stock{% endblock %}
+{% block header %}Ajustar Stock{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-box"></i> Producto</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr>
+                        <th>SKU:</th>
+                        <td><strong>{{ producto.sku }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Nombre:</th>
+                        <td>{{ producto.nombre }}</td>
+                    </tr>
+                    <tr>
+                        <th>Stock Actual:</th>
+                        <td>
+                            <span class="badge badge-{% if producto.necesita_reposicion %}warning{% else %}success{% endif %} badge-lg">
+                                {{ producto.stock }} unidades
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Stock Mínimo:</th>
+                        <td>{{ producto.stock_minimo }} unidades</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0"><i class="fas fa-sliders-h"></i> Ajustar Stock</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> Establezca el nuevo valor del stock. El sistema calculará automáticamente si es una entrada o salida.
+                </div>
+                
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-save"></i> Ajustar
+                        </button>
+                        <a href="{% url 'productos:producto_detail' producto.pk %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

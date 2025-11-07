@@ -1,0 +1,59 @@
+{% extends 'productos/base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}Eliminar Producto{% endblock %}
+{% block header %}Confirmar Eliminación{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <div class="alert alert-danger">
+            <h5><i class="fas fa-exclamation-triangle"></i> ¿Está seguro?</h5>
+            <p>¿Está seguro que desea eliminar el producto <strong>"{{ producto.nombre }}"</strong> (SKU: {{ producto.sku }})?</p>
+            <p class="mb-0"><strong>Esta acción no se puede deshacer.</strong></p>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <strong>Información del Producto</strong>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="30%">SKU:</th>
+                        <td>{{ producto.sku }}</td>
+                    </tr>
+                    <tr>
+                        <th>Nombre:</th>
+                        <td>{{ producto.nombre }}</td>
+                    </tr>
+                    <tr>
+                        <th>Descripción:</th>
+                        <td>{{ producto.descripcion }}</td>
+                    </tr>
+                    <tr>
+                        <th>Precio:</th>
+                        <td>${{ producto.precio }}</td>
+                    </tr>
+                    <tr>
+                        <th>Stock Actual:</th>
+                        <td>{{ producto.stock }} unidades</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="btn-group">
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Sí, eliminar
+                </button>
+                <a href="{% url 'productos:producto_detail' producto.pk %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

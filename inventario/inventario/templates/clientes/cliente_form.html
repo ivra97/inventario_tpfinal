@@ -1,0 +1,17 @@
+{% extends 'clientes/base.html' %}
+{% load bootstrap4 %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if form.instance.pk %}Editar{% else %}Crear{% endif %} Cliente{% endblock %}
+{% block header %}{% if form.instance.pk %}Editar{% else %}Crear{% endif %} Cliente{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {% crispy form %}
+        </form>
+    </div>
+</div>
+{% endblock %}

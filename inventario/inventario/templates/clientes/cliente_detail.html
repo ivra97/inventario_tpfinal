@@ -1,0 +1,112 @@
+{% extends 'clientes/base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}Detalle del Cliente{% endblock %}
+{% block header %}Detalle del Cliente{% endblock %}
+
+{% block extra_buttons %}
+<div>
+    <a href="{% url 'clientes:cliente_update' cliente.pk %}" class="btn btn-primary">
+        <i class="fas fa-edit"></i> Editar
+    </a>
+    <a href="{% url 'clientes:cliente_delete' cliente.pk %}" class="btn btn-danger">
+        <i class="fas fa-trash"></i> Eliminar
+    </a>
+    <a href="{% url 'clientes:cliente_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-user"></i> Información del Cliente</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <tr>
+                        <th width="30%">Nombre Completo:</th>
+                        <td><strong>{{ cliente.nombre_completo }}</strong></td>
+                    </tr>
+                    <tr>
+                        <th>Nombre:</th>
+                        <td>{{ cliente.nombre }}</td>
+                    </tr>
+                    <tr>
+                        <th>Apellido:</th>
+                        <td>{{ cliente.apellido }}</td>
+                    </tr>
+                    <tr>
+                        <th>Número de Documento:</th>
+                        <td><span class="badge badge-dark badge-lg">{{ cliente.numero_documento }}</span></td>
+                    </tr>
+                    <tr>
+                        <th>Email:</th>
+                        <td>
+                            <i class="fas fa-envelope text-primary"></i>
+                            <a href="mailto:{{ cliente.email }}">{{ cliente.email }}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Teléfono:</th>
+                        <td>
+                            <i class="fas fa-phone text-success"></i>
+                            <a href="tel:{{ cliente.telefono }}">{{ cliente.telefono }}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Dirección:</th>
+                        <td>
+                            <i class="fas fa-map-marker-alt text-danger"></i>
+                            {{ cliente.direccion }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Fecha de Registro:</th>
+                        <td>{{ cliente.fecha_creacion|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Última Actualización:</th>
+                        <td>{{ cliente.fecha_actualizacion|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> Acciones Rápidas</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    <a href="mailto:{{ cliente.email }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-envelope"></i> Enviar Email
+                    </a>
+                    <a href="tel:{{ cliente.telefono }}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-phone"></i> Llamar
+                    </a>
+                    <a href="{% url 'clientes:cliente_update' cliente.pk %}" class="list-group-item list-group-item-action">
+                        <i class="fas fa-edit"></i> Editar Información
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0"><i class="fas fa-chart-bar"></i> Estadísticas</h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small mb-0">
+                    Cliente registrado hace {{ cliente.fecha_creacion|timesince }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

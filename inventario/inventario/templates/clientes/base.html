@@ -1,0 +1,16 @@
+{% extends 'productos/base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}{% block header_title %}Clientes{% endblock %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .cliente-card {
+        transition: transform 0.2s;
+    }
+    .cliente-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+</style>
+{% endblock %}
