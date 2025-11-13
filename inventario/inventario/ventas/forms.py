@@ -47,14 +47,23 @@ class ItemVentaForm(forms.ModelForm):
         fields = ['producto', 'cantidad', 'precio_unitario']
         widgets = {
             'cantidad': forms.NumberInput(attrs={'min': 1, 'class': 'cantidad-item'}),
-            'precio_unitario': forms.NumberInput(attrs={'step': '0.01', 'class': 'precio-item', 'readonly': 'readonly'}),
+            'precio_unitario': forms.NumberInput(attrs={'step': '0.01', 'class': 'precio-item'}),
         }
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['producto'].widget.attrs.update({'class': 'producto-select'})
-        # Añadir atributos data para facilitar el cálculo con JavaScript
-        self.fields['producto'].queryset = Producto.objects.filter(stock__gt=0).order_by('nombre')
+        # Filtrar solo productos con stock
+        productos = Producto.objects.filter(stock__gt=0).order_by('nombre')
+        self.fields['producto'].queryset = productos
+        
+        # Agregar clase al select
+        self.fields['producto'].widget.attrs.update({
+            'class': 'producto-select form-control',
+            'onchange': 'actualizarPrecioProducto(this)'
+        })
+        
+        # Sobrescribir el label de las opciones para incluir precio
+        self.fields['producto'].label_from_instance = lambda obj: f"{obj.nombre} - ${obj.precio} (Stock: {obj.stock})"
     
     def clean_cantidad(self):
         """Valida que la cantidad sea positiva y que haya stock."""
@@ -78,8 +87,8 @@ ItemVentaFormSet = inlineformset_factory(
     Venta,
     ItemVenta,
     form=ItemVentaForm,
-    extra=1,  # Número de formularios vacíos a mostrar
+    extra=0,  # No agregar formularios vacíos adicionales
     can_delete=True,
-    min_num=1,  # Mínimo 1 item
+    min_num=1,  # Mínimo 1 item (este creará 1 formulario)
     validate_min=True,
 )

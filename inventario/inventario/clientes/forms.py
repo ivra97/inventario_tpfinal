@@ -33,7 +33,7 @@ class ClienteForm(forms.ModelForm):
             Field('numero_documento'),
             Row(
                 Column(PrependedText('email', '@'), css_class='col-md-6'),
-                Column(PrependedText('telefono', '<i class="fas fa-phone"></i>'), css_class='col-md-6'),
+                Column(PrependedText('telefono', '📞'), css_class='col-md-6'),
             ),
             Field('direccion'),
             ButtonHolder(

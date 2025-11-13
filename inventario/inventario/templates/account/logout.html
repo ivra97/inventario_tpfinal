@@ -1,0 +1,37 @@
+{% load bootstrap4 %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cerrar Sesión - Sistema de Inventario</title>
+    {% bootstrap_css %}
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h3 class="card-title text-center mb-4">Cerrar Sesión</h3>
+                        
+                        <p class="text-center">¿Está seguro que desea cerrar sesión?</p>
+
+                        <form method="post" action="{% url 'account_logout' %}">
+                            {% csrf_token %}
+                            
+                            <button type="submit" class="btn btn-danger btn-block mt-3">
+                                Cerrar Sesión
+                            </button>
+                            <a href="{% url 'productos:producto_list' %}" class="btn btn-secondary btn-block mt-2">
+                                Cancelar
+                            </a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% bootstrap_javascript jquery='full' %}
+</body>
+</html>

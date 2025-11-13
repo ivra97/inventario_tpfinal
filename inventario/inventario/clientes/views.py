@@ -3,11 +3,12 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, D
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.db.models import Q
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Cliente
 from .forms import ClienteForm
 
 
-class ClienteListView(ListView):
+class ClienteListView(LoginRequiredMixin, ListView):
     """Muestra una lista de todos los clientes."""
     model = Cliente
     template_name = "clientes/cliente_list.html"
@@ -35,14 +36,14 @@ class ClienteListView(ListView):
         return context
 
 
-class ClienteDetailView(DetailView):
+class ClienteDetailView(LoginRequiredMixin, DetailView):
     """Muestra los detalles de un cliente específico."""
     model = Cliente
     template_name = "clientes/cliente_detail.html"
     context_object_name = "cliente"
 
 
-class ClienteCreateView(CreateView):
+class ClienteCreateView(LoginRequiredMixin, CreateView):
     """Vista para crear un nuevo cliente."""
     model = Cliente
     form_class = ClienteForm
@@ -55,7 +56,7 @@ class ClienteCreateView(CreateView):
         return response
 
 
-class ClienteUpdateView(UpdateView):
+class ClienteUpdateView(LoginRequiredMixin, UpdateView):
     """Vista para actualizar un cliente existente."""
     model = Cliente
     form_class = ClienteForm
@@ -68,7 +69,7 @@ class ClienteUpdateView(UpdateView):
         return response
 
 
-class ClienteDeleteView(DeleteView):
+class ClienteDeleteView(LoginRequiredMixin, DeleteView):
     """Vista para eliminar un cliente."""
     model = Cliente
     template_name = "clientes/cliente_confirm_delete.html"

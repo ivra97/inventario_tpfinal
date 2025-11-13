@@ -9,15 +9,17 @@ from django.contrib import messages
 from django.shortcuts import get_object_or_404, redirect
 from django.db.models import Q, F
 from django.utils import timezone
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Producto, MovimientoStock
 from .forms import ProductoForm, MovimientoStockForm, AjusteStockForm
 
 
-class ProductoListView(ListView):
+class ProductoListView(LoginRequiredMixin, ListView):
     """Muestra una lista de todos los productos."""
     model = Producto
     template_name = "productos/producto_list.html"
     context_object_name = "productos"
+    paginate_by = 10  # Paginación: 10 productos por página
 
     def get_queryset(self):
         """Sobrescribe para permitir el filtrado por stock bajo."""
@@ -37,9 +39,8 @@ class ProductoListView(ListView):
         context = super().get_context_data(**kwargs)
         context["stock_bajo"] = self.request.GET.get("stock_bajo")
         return context
-    
 
-class ProductoDetailView(DetailView):
+class ProductoDetailView(LoginRequiredMixin, DetailView):
     """Muestra los detalles de un producto específico."""
     model = Producto
     template_name = "productos/producto_detail.html"
@@ -54,7 +55,7 @@ class ProductoDetailView(DetailView):
         return context
     
 
-class ProductoCreateView(CreateView):
+class ProductoCreateView(LoginRequiredMixin, CreateView):
     """Vista para crear un nuevo producto."""
     model = Producto
     form_class = ProductoForm
@@ -79,7 +80,7 @@ class ProductoCreateView(CreateView):
         return response
     
 
-class ProductoUpdateView(UpdateView):
+class ProductoUpdateView(LoginRequiredMixin, UpdateView):
     """Vista para actualizar un producto existente."""
     model = Producto
     template_name = "productos/producto_form.html"
@@ -93,7 +94,7 @@ class ProductoUpdateView(UpdateView):
         return response
     
 
-class ProductoDeleteView(DeleteView):
+class ProductoDeleteView(LoginRequiredMixin, DeleteView):
     """Vista para eliminar un producto."""
     model = Producto
     template_name = "productos/producto_confirm_delete.html"
@@ -105,7 +106,7 @@ class ProductoDeleteView(DeleteView):
         return super().delete(request, *args, **kwargs)
     
 
-class MovimientoStockCreateView(CreateView):
+class MovimientoStockCreateView(LoginRequiredMixin, CreateView):
     """Vista para registrar un nuevo movimiento de stock."""
     model = MovimientoStock
     template_name = "productos/movimiento_form.html"
@@ -146,7 +147,7 @@ class MovimientoStockCreateView(CreateView):
         messages.success(self.request, f"Movimiento de stock registrado exitosamente")
         return redirect("productos:producto_detail", pk=movimiento.producto.pk)       
 
-class AjusteStockView(FormView):
+class AjusteStockView(LoginRequiredMixin, FormView):
     """Vista para ajustar el stock de un producto a un valor específico."""
     form_class = AjusteStockForm
     template_name = "productos/ajuste_stock_form.html"
@@ -194,7 +195,7 @@ class AjusteStockView(FormView):
         return redirect("productos:producto_detail", pk=producto.pk)
 
 
-class StockBajoListView(ListView):
+class StockBajoListView(LoginRequiredMixin, ListView):
     """Muestra una lista filtrada solo para productos con stock bajo."""
     model = Producto
     template_name = "productos/stock_bajo_list.html"

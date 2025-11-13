@@ -1,4 +1,4 @@
-{% extends 'productos/base.html' %}
+{% extends 'base.html' %}
 {% load bootstrap4 %}
 {% load crispy_forms_tags %}
 
@@ -66,18 +66,21 @@
                                 </div>
                                 <div class="col-md-3">
                                     <label>Precio Unitario:</label>
-                                    {{ form.precio_unitario }}
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">$</span>
+                                        </div>
+                                        {{ form.precio_unitario }}
+                                    </div>
                                     {{ form.precio_unitario.errors }}
                                 </div>
                                 <div class="col-md-2">
                                     <label>Subtotal:</label>
                                     <input type="text" class="form-control subtotal-display" readonly value="0.00">
                                     {{ form.DELETE }}
-                                    {% if forloop.counter > 1 %}
                                     <button type="button" class="btn btn-sm btn-danger mt-2 delete-row-btn">
                                         <i class="fas fa-trash"></i> Eliminar
                                     </button>
-                                    {% endif %}
                                 </div>
                             </div>
                             {{ form.id }}
@@ -111,11 +114,45 @@
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Obtener todos los productos con sus precios
-    const productos = {};
-    {% for producto in form.fields.cliente.queryset.model.objects.none %}{% endfor %}
+// Función global para actualizar el precio cuando se selecciona un producto
+function actualizarPrecioProducto(selectElement) {
+    const row = selectElement.closest('.formset-row');
+    const inputPrecio = row.querySelector('.precio-item');
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const textoOpcion = selectedOption.text;
     
+    if (selectElement.value) {
+        // Extraer el precio del formato: "Nombre - $XX.XX (Stock: YY)"
+        const precioMatch = textoOpcion.match(/\$([0-9.]+)/);
+        if (precioMatch) {
+            inputPrecio.value = parseFloat(precioMatch[1]).toFixed(2);
+            calcularSubtotal(row);
+        }
+    } else {
+        inputPrecio.value = '';
+        calcularSubtotal(row);
+    }
+}
+
+// Función para calcular el subtotal de una fila
+function calcularSubtotal(row) {
+    const cantidad = parseFloat(row.querySelector('.cantidad-item').value) || 0;
+    const precio = parseFloat(row.querySelector('.precio-item').value) || 0;
+    const subtotal = cantidad * precio;
+    row.querySelector('.subtotal-display').value = subtotal.toFixed(2);
+    calcularTotal();
+}
+
+// Función para calcular el total general
+function calcularTotal() {
+    let total = 0;
+    document.querySelectorAll('.subtotal-display').forEach(function(input) {
+        total += parseFloat(input.value) || 0;
+    });
+    document.getElementById('total-venta').textContent = total.toFixed(2);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
     // Función para actualizar el precio cuando se selecciona un producto
     function actualizarPrecio(selectProducto) {
         const productoId = selectProducto.value;
@@ -124,28 +161,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const inputCantidad = row.querySelector('.cantidad-item');
         
         if (productoId) {
-            // Hacer una petición para obtener el precio del producto
-            fetch(`/productos/${productoId}/`)
-                .then(response => response.json())
-                .catch(() => {
-                    // Si falla, obtener el precio del atributo data si existe
-                    const option = selectProducto.options[selectProducto.selectedIndex];
-                    const precio = option.getAttribute('data-precio');
-                    if (precio) {
-                        inputPrecio.value = parseFloat(precio).toFixed(2);
-                        calcularSubtotal(row);
-                    }
-                });
-            
-            // Método alternativo: obtener precio de las opciones
+            // Obtener el precio del texto de la opción seleccionada
             const selectedOption = selectProducto.options[selectProducto.selectedIndex];
-            const precioTexto = selectedOption.text.match(/\$([0-9.]+)/);
-            if (precioTexto) {
-                inputPrecio.value = parseFloat(precioTexto[1]).toFixed(2);
+            const textoOpcion = selectedOption.text;
+            // Extraer el precio del formato: "Nombre - $XX.XX (Stock: YY)"
+            const precioMatch = textoOpcion.match(/\$([0-9.]+)/);
+            if (precioMatch) {
+                inputPrecio.value = parseFloat(precioMatch[1]).toFixed(2);
                 calcularSubtotal(row);
             }
         } else {
-            inputPrecio.value = '0.00';
+            inputPrecio.value = '';
             calcularSubtotal(row);
         }
     }
@@ -173,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
         select.addEventListener('change', function() {
             actualizarPrecio(this);
         });
-        // Inicializar precio si ya hay un producto seleccionado
+        // Inicializar precio si ya hay un producto seleccionado al cargar
         if (select.value) {
             actualizarPrecio(select);
         }
@@ -198,6 +224,69 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+    
+    // Botón para agregar nuevos items
+    const addButton = document.getElementById('add-form');
+    if (addButton) {
+        addButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            const container = document.getElementById('formset-container');
+            const totalForms = document.querySelector('input[name$="TOTAL_FORMS"]');
+            const formCount = parseInt(totalForms.value);
+            
+            // Clonar la última fila del formset
+            const lastForm = container.querySelector('.formset-row:last-child');
+            const newForm = lastForm.cloneNode(true);
+            
+            // Actualizar los índices en el nuevo formulario
+            const formRegex = RegExp(`items-(\\d+)-`, 'g');
+            newForm.innerHTML = newForm.innerHTML.replace(formRegex, `items-${formCount}-`);
+            
+            // Limpiar los valores del nuevo formulario
+            newForm.querySelectorAll('input, select').forEach(function(input) {
+                if (input.type === 'checkbox') {
+                    input.checked = false;
+                } else if (input.name && !input.name.includes('TOTAL_FORMS') && !input.name.includes('INITIAL_FORMS')) {
+                    input.value = '';
+                }
+            });
+            
+            // Agregar event listeners al nuevo formulario
+            const selectProducto = newForm.querySelector('.producto-select');
+            if (selectProducto) {
+                selectProducto.addEventListener('change', function() {
+                    actualizarPrecio(this);
+                });
+            }
+            
+            const inputCantidad = newForm.querySelector('.cantidad-item');
+            if (inputCantidad) {
+                inputCantidad.addEventListener('input', function() {
+                    const row = this.closest('.formset-row');
+                    calcularSubtotal(row);
+                });
+            }
+            
+            const deleteBtn = newForm.querySelector('.delete-row-btn');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', function() {
+                    const row = this.closest('.formset-row');
+                    const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
+                    if (deleteCheckbox) {
+                        deleteCheckbox.checked = true;
+                        row.style.display = 'none';
+                        calcularTotal();
+                    }
+                });
+            }
+            
+            // Agregar el nuevo formulario al contenedor
+            container.appendChild(newForm);
+            
+            // Incrementar el contador de formularios
+            totalForms.value = formCount + 1;
+        });
+    }
     
     // Calcular total inicial
     calcularTotal();

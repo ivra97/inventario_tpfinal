@@ -4,12 +4,13 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Venta, ItemVenta
 from .forms import VentaForm, ItemVentaFormSet
 from productos.models import MovimientoStock
 
 
-class VentaListView(ListView):
+class VentaListView(LoginRequiredMixin, ListView):
     """Muestra una lista de todas las ventas."""
     model = Venta
     template_name = "ventas/venta_list.html"
@@ -21,7 +22,7 @@ class VentaListView(ListView):
         return Venta.objects.select_related('cliente').order_by('-fecha')
 
 
-class VentaDetailView(DetailView):
+class VentaDetailView(LoginRequiredMixin, DetailView):
     """Muestra los detalles de una venta con sus items."""
     model = Venta
     template_name = "ventas/venta_detail.html"
@@ -33,7 +34,7 @@ class VentaDetailView(DetailView):
         return context
 
 
-class VentaCreateView(CreateView):
+class VentaCreateView(LoginRequiredMixin, CreateView):
     """Vista para crear una nueva venta con items."""
     model = Venta
     form_class = VentaForm
@@ -45,7 +46,8 @@ class VentaCreateView(CreateView):
         if self.request.POST:
             context['formset'] = ItemVentaFormSet(self.request.POST, instance=self.object)
         else:
-            context['formset'] = ItemVentaFormSet(instance=self.object)
+            # En GET, si es una nueva venta, no pasar instance
+            context['formset'] = ItemVentaFormSet()
         return context
 
     @transaction.atomic

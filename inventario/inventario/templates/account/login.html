@@ -1,0 +1,47 @@
+{% load bootstrap4 %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión - Sistema de Inventario</title>
+    {% bootstrap_css %}
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center mt-5">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h3 class="card-title text-center mb-4">Iniciar Sesión</h3>
+                        
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+
+                        <form method="post" action="{% url 'account_login' %}">
+                            {% csrf_token %}
+                            {% bootstrap_form form %}
+                            
+                            <button type="submit" class="btn btn-primary btn-block mt-3">
+                                Ingresar
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <p class="text-center mt-3 text-muted">
+                    <small>Sistema de Inventario - Control de Acceso</small>
+                </p>
+            </div>
+        </div>
+    </div>
+    {% bootstrap_javascript jquery='full' %}
+</body>
+</html>
