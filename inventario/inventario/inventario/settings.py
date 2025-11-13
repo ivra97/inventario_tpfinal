@@ -83,12 +83,27 @@ WSGI_APPLICATION = 'inventario.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+import os
+
+# Usar PostgreSQL si DATABASE_HOST está definido (Docker), sino SQLite (desarrollo local)
+if os.environ.get('DATABASE_HOST'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': os.environ.get('DATABASE_NAME', 'inventario_db'),
+            'USER': os.environ.get('DATABASE_USER', 'inventario_user'),
+            'PASSWORD': os.environ.get('DATABASE_PASSWORD', 'inventario_pass'),
+            'HOST': os.environ.get('DATABASE_HOST', 'db'),
+            'PORT': os.environ.get('DATABASE_PORT', '5432'),
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
