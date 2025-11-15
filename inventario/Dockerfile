@@ -16,6 +16,9 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     zlib1g-dev \
     netcat-traditional \
+    libcairo2-dev \
+    pkg-config \
+    python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copiar el archivo de requirements
