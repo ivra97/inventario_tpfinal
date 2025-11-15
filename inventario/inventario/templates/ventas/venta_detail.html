@@ -6,6 +6,9 @@
 
 {% block extra_buttons %}
 <div>
+    <a href="{% url 'ventas:venta_pdf' venta.pk %}" class="btn btn-danger" target="_blank">
+        <i class="fas fa-file-pdf"></i> Descargar PDF
+    </a>
     <a href="{% url 'ventas:venta_list' %}" class="btn btn-secondary">
         <i class="fas fa-arrow-left"></i> Volver al Listado
     </a>

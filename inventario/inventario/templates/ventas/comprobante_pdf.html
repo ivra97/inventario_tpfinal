@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Comprobante de Venta - {{ venta.codigo_venta }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12pt;
+            color: #333;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 15px;
+        }
+        
+        .header h1 {
+            margin: 0;
+            color: #007bff;
+            font-size: 24pt;
+        }
+        
+        .header p {
+            margin: 5px 0;
+            font-size: 10pt;
+            color: #666;
+        }
+        
+        .info-section {
+            margin-bottom: 25px;
+        }
+        
+        .info-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            width: 150px;
+            color: #555;
+        }
+        
+        .info-value {
+            flex: 1;
+        }
+        
+        .section-title {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 14pt;
+            font-weight: bold;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        
+        table thead {
+            background-color: #f8f9fa;
+        }
+        
+        table th {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        table td {
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .total-section {
+            margin-top: 20px;
+            text-align: right;
+        }
+        
+        .total-row {
+            padding: 10px;
+            font-size: 16pt;
+            font-weight: bold;
+            background-color: #f8f9fa;
+            border: 2px solid #007bff;
+        }
+        
+        .footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            text-align: center;
+            font-size: 9pt;
+            color: #666;
+        }
+        
+        .firma-section {
+            margin-top: 60px;
+            text-align: center;
+        }
+        
+        .firma-line {
+            border-top: 1px solid #333;
+            width: 300px;
+            margin: 0 auto;
+            margin-top: 60px;
+        }
+        
+        .firma-text {
+            margin-top: 5px;
+            font-size: 10pt;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>COMPROBANTE DE VENTA</h1>
+        <p>Sistema de Inventario</p>
+        <p>Documento generado el {{ fecha_actual|date:"d/m/Y H:i" }}</p>
+    </div>
+
+    <div class="section-title">Información de la Venta</div>
+    <div class="info-section">
+        <div class="info-row">
+            <div class="info-label">Código de Venta:</div>
+            <div class="info-value">{{ venta.codigo_venta }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Fecha de Venta:</div>
+            <div class="info-value">{{ venta.fecha|date:"d/m/Y H:i" }}</div>
+        </div>
+    </div>
+
+    <div class="section-title">Datos del Cliente</div>
+    <div class="info-section">
+        <div class="info-row">
+            <div class="info-label">Cliente:</div>
+            <div class="info-value">{{ venta.cliente.nombre_completo }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Documento:</div>
+            <div class="info-value">{{ venta.cliente.numero_documento }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Email:</div>
+            <div class="info-value">{{ venta.cliente.email }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Teléfono:</div>
+            <div class="info-value">{{ venta.cliente.telefono }}</div>
+        </div>
+        <div class="info-row">
+            <div class="info-label">Dirección:</div>
+            <div class="info-value">{{ venta.cliente.direccion }}</div>
+        </div>
+    </div>
+
+    <div class="section-title">Detalle de Productos</div>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%;">Código</th>
+                <th style="width: 40%;">Producto</th>
+                <th style="width: 15%;" class="text-center">Cantidad</th>
+                <th style="width: 15%;" class="text-right">Precio Unit.</th>
+                <th style="width: 20%;" class="text-right">Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td>{{ item.producto.sku }}</td>
+                <td>{{ item.producto.nombre }}</td>
+                <td class="text-center">{{ item.cantidad }}</td>
+                <td class="text-right">${{ item.precio_unitario }}</td>
+                <td class="text-right">${{ item.subtotal }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="total-section">
+        <div class="total-row">
+            TOTAL: ${{ venta.total }}
+        </div>
+    </div>
+
+    <div class="firma-section">
+        <div class="firma-line"></div>
+        <div class="firma-text">Firma y Aclaración del Cliente</div>
+    </div>
+
+    <div class="footer">
+        <p>Este comprobante es válido como constancia de venta.</p>
+        <p>Gracias por su compra.</p>
+    </div>
+</body>
+</html>

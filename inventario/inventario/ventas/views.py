@@ -5,6 +5,10 @@ from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
+from io import BytesIO
 from .models import Venta, ItemVenta
 from .forms import VentaForm, ItemVentaFormSet
 from productos.models import MovimientoStock
@@ -119,3 +123,28 @@ class VentaCreateView(LoginRequiredMixin, CreateView):
             # El formset tiene errores
             messages.error(self.request, "Por favor corrija los errores en los items de la venta")
             return self.form_invalid(form)
+
+
+def generar_pdf_venta(request, pk):
+    """Genera un PDF del comprobante de venta."""
+    venta = get_object_or_404(Venta, pk=pk)
+    items = venta.items.select_related('producto').all()
+    
+    # Renderizar el template HTML
+    html_string = render_to_string('ventas/comprobante_pdf.html', {
+        'venta': venta,
+        'items': items,
+        'fecha_actual': timezone.now()
+    })
+    
+    # Crear el PDF
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html_string.encode("UTF-8")), result)
+    
+    if not pdf.err:
+        # Crear respuesta HTTP con el PDF
+        response = HttpResponse(result.getvalue(), content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="comprobante_venta_{venta.codigo_venta}.pdf"'
+        return response
+    
+    return HttpResponse('Error al generar PDF', status=500)
