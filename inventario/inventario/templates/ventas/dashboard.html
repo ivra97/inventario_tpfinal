@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% load bootstrap4 %}
+
+{% block title %}Dashboard de Ventas{% endblock %}
+{% block header %}Dashboard de Ventas - Últimos 30 Días{% endblock %}
+
+{% block extra_buttons %}
+<div>
+    <a href="{% url 'ventas:venta_list' %}" class="btn btn-secondary">
+        <i class="fas fa-list"></i> Ver Todas las Ventas
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Tarjetas de Estadísticas -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-dollar-sign"></i> Total Vendido</h5>
+                <h2 class="mb-0">${{ total_mes|floatformat:2 }}</h2>
+                <small>Últimos 30 días</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-shopping-cart"></i> Cantidad de Ventas</h5>
+                <h2 class="mb-0">{{ cantidad_mes }}</h2>
+                <small>Últimos 30 días</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-chart-line"></i> Promedio por Venta</h5>
+                <h2 class="mb-0">${{ promedio_venta|floatformat:2 }}</h2>
+                <small>Últimos 30 días</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Gráfico de Ventas -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Ventas por Día</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="ventasChart" style="max-height: 400px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-money-bill-wave"></i> Total en Pesos por Día</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="totalesChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="fas fa-receipt"></i> Cantidad de Ventas por Día</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="cantidadesChart" style="max-height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+    // Datos desde Django
+    const labels = {{ labels|safe }};
+    const totales = {{ totales|safe }};
+    const cantidades = {{ cantidades|safe }};
+
+    // Configuración común
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    };
+
+    // Gráfico Principal - Combinado
+    const ctxMain = document.getElementById('ventasChart').getContext('2d');
+    new Chart(ctxMain, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Total ($)',
+                    data: totales,
+                    backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    yAxisID: 'y'
+                },
+                {
+                    label: 'Cantidad de Ventas',
+                    data: cantidades,
+                    type: 'line',
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 3,
+                    fill: false,
+                    tension: 0.4,
+                    yAxisID: 'y1'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                },
+                title: {
+                    display: true,
+                    text: 'Evolución de Ventas - Últimos 30 Días'
+                }
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Total ($)'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Cantidad'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    }
+                }
+            }
+        }
+    });
+
+    // Gráfico de Totales
+    const ctxTotales = document.getElementById('totalesChart').getContext('2d');
+    new Chart(ctxTotales, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Total Vendido ($)',
+                data: totales,
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: commonOptions
+    });
+
+    // Gráfico de Cantidades
+    const ctxCantidades = document.getElementById('cantidadesChart').getContext('2d');
+    new Chart(ctxCantidades, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Cantidad de Ventas',
+                data: cantidades,
+                backgroundColor: 'rgba(153, 102, 255, 0.6)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 2
+            }]
+        },
+        options: commonOptions
+    });
+</script>
+{% endblock %}

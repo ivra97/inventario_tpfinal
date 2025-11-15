@@ -5,6 +5,7 @@ app_name = 'ventas'
 
 urlpatterns = [
     path('', views.VentaListView.as_view(), name='venta_list'),
+    path('dashboard/', views.dashboard_ventas, name='dashboard'),
     path('crear/', views.VentaCreateView.as_view(), name='venta_create'),
     path('<int:pk>/', views.VentaDetailView.as_view(), name='venta_detail'),
     path('<int:pk>/pdf/', views.generar_pdf_venta, name='venta_pdf'),

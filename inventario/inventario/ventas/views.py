@@ -5,10 +5,13 @@ from django.contrib import messages
 from django.db import transaction
 from django.utils import timezone
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
+from django.db.models import Sum, Count
+from django.db.models.functions import TruncDate
 from xhtml2pdf import pisa
 from io import BytesIO
+from datetime import timedelta
 from .models import Venta, ItemVenta
 from .forms import VentaForm, ItemVentaFormSet
 from productos.models import MovimientoStock
@@ -148,3 +151,40 @@ def generar_pdf_venta(request, pk):
         return response
     
     return HttpResponse('Error al generar PDF', status=500)
+
+
+def dashboard_ventas(request):
+    """Dashboard con gráfico de ventas por día."""
+    # Obtener ventas de los últimos 30 días
+    fecha_inicio = timezone.now() - timedelta(days=30)
+    
+    ventas_por_dia = Venta.objects.filter(
+        fecha__gte=fecha_inicio
+    ).annotate(
+        dia=TruncDate('fecha')
+    ).values('dia').annotate(
+        total_dia=Sum('total'),
+        cantidad_ventas=Count('id')
+    ).order_by('dia')
+    
+    # Preparar datos para Chart.js
+    labels = [v['dia'].strftime('%d/%m') for v in ventas_por_dia]
+    totales = [float(v['total_dia']) for v in ventas_por_dia]
+    cantidades = [v['cantidad_ventas'] for v in ventas_por_dia]
+    
+    # Estadísticas generales
+    total_ventas = Venta.objects.filter(fecha__gte=fecha_inicio).aggregate(
+        total=Sum('total'),
+        cantidad=Count('id')
+    )
+    
+    context = {
+        'labels': labels,
+        'totales': totales,
+        'cantidades': cantidades,
+        'total_mes': total_ventas['total'] or 0,
+        'cantidad_mes': total_ventas['cantidad'] or 0,
+        'promedio_venta': (total_ventas['total'] / total_ventas['cantidad']) if total_ventas['cantidad'] else 0
+    }
+    
+    return render(request, 'ventas/dashboard.html', context)
